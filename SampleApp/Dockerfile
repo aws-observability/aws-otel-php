@@ -16,9 +16,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 WORKDIR /app
 RUN curl -sS https://get.symfony.com/cli/installer | bash
 RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
-RUN composer install
 
 COPY . .
+RUN composer install
 
 EXPOSE 8000
 
