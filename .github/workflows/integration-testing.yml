@@ -1,9 +1,9 @@
 name: Integration Testing
 on:
-  pull_request:
   push:
     branches:
       - main
+      - aws-sdk-instrumentation-sample-apps
 
 jobs:
   build:
