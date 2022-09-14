@@ -22,7 +22,6 @@ use OpenTelemetry\Instrumentation\AwsSdk\AwsSdkInstrumentation;
 
 class AwsSdkInstrumentationController
 {
-
     private Request $request;
 
     public function __construct()
@@ -115,7 +114,6 @@ class AwsSdkInstrumentationController
     #[Route('/aws-sdk-call')]
     public function awsSdkCall(): Response
     {
-
         // Initialize Span Processor, X-Ray ID generator, Tracer Provider, and Propagator
         $spanProcessor = new SimpleSpanProcessor(new OTLPExporter());
         $idGenerator = new IdGenerator();
@@ -159,10 +157,11 @@ class AwsSdkInstrumentationController
         try{
             $result = $s3Client->listBuckets();
 
+            echo $result['Body'] . "\n";
+
             $root->setAttributes([
                 'http.status_code' => $result['@metadata']['statusCode'],
             ]);
-            
 
         } catch (AwsException $e){
             $root->recordException($e);
@@ -181,5 +180,4 @@ class AwsSdkInstrumentationController
             ['traceId' => $traceId]
         );
     }
-
 }
