@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - aws-sdk-instrumentation-sample-apps
     paths-ignore:
       - '**.md'
 
