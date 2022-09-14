@@ -159,8 +159,6 @@ class AwsSdkInstrumentationController
         try{
             $result = $s3Client->listBuckets();
 
-            print_r($result);
-
             $root->setAttributes([
                 'http.status_code' => $result['@metadata']['statusCode'],
             ]);
