@@ -33,8 +33,6 @@ class AwsSdkInstrumentationController
     #[Route('/')]
     public function home(): Response
     {
-        $number = random_int(0, 100);
-
         return new Response(
             '<html><body>AWS SDK Instrumentation Sample App Running!</body></html>'
         );
@@ -42,7 +40,12 @@ class AwsSdkInstrumentationController
 
     private function convertOtelTraceIdToXrayFormat(String $otelTraceId) : String
     {
-        $xrayTraceID = sprintf("1-%s-%s", substr($otelTraceId, 0, 8), substr($otelTraceId, 8));
+        $xrayTraceID = sprintf(
+            "1-%s-%s",
+            substr($otelTraceId, 0, 8),
+            substr($otelTraceId, 8)
+        );
+
         return $xrayTraceID;
     }
 
@@ -58,10 +61,16 @@ class AwsSdkInstrumentationController
         $carrier = [];
 
         // Create and activate root span
-        $root = $tracer->spanBuilder('outgoing-http-call')->setSpanKind(SpanKind::KIND_CLIENT)->startSpan();
+        $root = $tracer
+                ->spanBuilder('outgoing-http-call')
+                ->setSpanKind(SpanKind::KIND_CLIENT)
+                ->startSpan();
         $rootScope = $root->activate();
 
-        $httpSpan = $tracer->spanBuilder('get-request')->setSpanKind(SpanKind::KIND_CLIENT)->startSpan();
+        $httpSpan = $tracer
+                ->spanBuilder('get-request')
+                ->setSpanKind(SpanKind::KIND_CLIENT)
+                ->startSpan();
         $httpScope = $httpSpan->activate();
 
         // Make HTTP request
@@ -94,8 +103,12 @@ class AwsSdkInstrumentationController
         $root->end();
         $rootScope->detach();
 
+        $traceId = $this->convertOtelTraceIdToXrayFormat(
+            $root->getContext()->getTraceId()
+        );
+
         return new JsonResponse(
-            array('traceId' => $this->convertOtelTraceIdToXrayFormat($root->getContext()->getTraceId()))
+            ['traceId' => $traceId]
         );
     }
 
@@ -117,7 +130,11 @@ class AwsSdkInstrumentationController
         $awssdkinstrumentation->setTracerProvider($tracerProvider);
 
         // Create and activate root span
-        $root = $awssdkinstrumentation->getTracer()->spanBuilder('AwsSDKInstrumentation')->setSpanKind(SpanKind::KIND_SERVER)->startSpan();
+        $root = $awssdkinstrumentation
+                ->getTracer()
+                ->spanBuilder('AwsSDKInstrumentation')
+                ->setSpanKind(SpanKind::KIND_SERVER)
+                ->startSpan();
         $rootScope = $root->activate();
 
 
@@ -142,7 +159,7 @@ class AwsSdkInstrumentationController
         try{
             $result = $s3Client->listBuckets();
 
-            echo $result['Body'] . "\n";
+            print_r($result);
 
             $root->setAttributes([
                 'http.status_code' => $result['@metadata']['statusCode'],
@@ -158,8 +175,12 @@ class AwsSdkInstrumentationController
         $root->end();
         $rootScope->detach();
 
+        $traceId = $this->convertOtelTraceIdToXrayFormat(
+            $root->getContext()->getTraceId()
+        );
+
         return new JsonResponse(
-            array('traceId' => $this->convertOtelTraceIdToXrayFormat($root->getContext()->getTraceId()))
+            ['traceId' => $traceId]
         );
     }
 
