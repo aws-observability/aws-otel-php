@@ -2,16 +2,10 @@
 namespace App\Controller;
 
 use Aws\Exception\AwsException;
-use OpenTelemetry\API\Trace\SpanInterface;
-use OpenTelemetry\Context\ScopeInterface;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-
 use Aws\S3\S3Client;
 
+use OpenTelemetry\API\Trace\SpanInterface;
+use OpenTelemetry\Context\ScopeInterface;
 use OpenTelemetry\API\Trace\SpanKind;
 use OpenTelemetry\Aws\Xray\IdGenerator;
 use OpenTelemetry\Aws\Xray\Propagator;
@@ -19,6 +13,12 @@ use OpenTelemetry\Contrib\OtlpGrpc\Exporter as OTLPExporter;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
 use OpenTelemetry\Instrumentation\AwsSdk\AwsSdkInstrumentation;
+
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class AwsSdkInstrumentationController
 {
@@ -135,7 +135,6 @@ class AwsSdkInstrumentationController
                 ->startSpan();
         $rootScope = $root->activate();
 
-
         $root->setAttributes([
             "http.method" => $this->request->getMethod(),
             "http.url" => $this->request->getUri(),
@@ -168,7 +167,6 @@ class AwsSdkInstrumentationController
         }
 
         // End the root span after all the calls to the AWS SDK have been made
-
         $root->end();
         $rootScope->detach();
 
