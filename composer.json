@@ -1,0 +1,11 @@
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.234",
+        "open-telemetry/api": "^0.0.14",
+        "php-http/guzzle7-adapter": "^1.0",
+        "open-telemetry/sdk": "^0.0.14",
+        "open-telemetry/sdk-contrib": "^0.0.14",
+        "php-http/message": "^1.13",
+        "grpc/grpc": "^1.42"
+    }
+}
