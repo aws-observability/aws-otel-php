@@ -4,21 +4,27 @@ namespace App\Controller;
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 
-use OpenTelemetry\API\Trace\SpanInterface;
-use OpenTelemetry\Context\ScopeInterface;
 use OpenTelemetry\API\Trace\SpanKind;
+use OpenTelemetry\API\Common\Signal\Signals;
+
+use OpenTelemetry\Contrib\Otlp\OtlpUtil;
+use OpenTelemetry\Contrib\Otlp\SpanExporter;
+use OpenTelemetry\Contrib\Grpc\GrpcTransportFactory;
+
 use OpenTelemetry\Aws\Xray\IdGenerator;
 use OpenTelemetry\Aws\Xray\Propagator;
-use OpenTelemetry\Contrib\OtlpGrpc\Exporter as OTLPExporter;
+use OpenTelemetry\Aws\AwsSdkInstrumentation;
+
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
-use OpenTelemetry\Instrumentation\AwsSdk\AwsSdkInstrumentation;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+
+
 
 class AwsSdkInstrumentationController
 {
@@ -52,7 +58,10 @@ class AwsSdkInstrumentationController
     public function outgoingHttpCall(): Response
     {
         // Initialize Span Processor, X-Ray ID generator, Tracer Provider, and Propagator
-        $spanProcessor = new SimpleSpanProcessor(new OTLPExporter());
+        $transport = (new GrpcTransportFactory())->create('http://127.0.0.1:4317' . OtlpUtil::method(Signals::TRACE));
+        $exporter = new SpanExporter($transport);
+        $spanProcessor = new SimpleSpanProcessor($exporter);
+
         $idGenerator = new IdGenerator();
         $tracerProvider = new TracerProvider($spanProcessor, null, null, null, $idGenerator);
         $propagator = new Propagator();
@@ -115,7 +124,10 @@ class AwsSdkInstrumentationController
     public function awsSdkCall(): Response
     {
         // Initialize Span Processor, X-Ray ID generator, Tracer Provider, and Propagator
-        $spanProcessor = new SimpleSpanProcessor(new OTLPExporter());
+        $transport = (new GrpcTransportFactory())->create('http://127.0.0.1:4317' . OtlpUtil::method(Signals::TRACE));
+        $exporter = new SpanExporter($transport);
+
+        $spanProcessor = new SimpleSpanProcessor($exporter);
         $idGenerator = new IdGenerator();
         $tracerProvider = new TracerProvider($spanProcessor, null, null, null, $idGenerator);
         $propagator = new Propagator();
