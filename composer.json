@@ -1,4 +1,5 @@
 {
+    "minimum-stability": "dev",
     "require": {
         "aws/aws-sdk-php": "^3.234",
         "open-telemetry/api": "^1.0.0beta3",
@@ -6,6 +7,12 @@
         "open-telemetry/sdk": "^1.0.0beta3",
         "open-telemetry/contrib-aws": "^1.0.0beta3",
         "php-http/message": "^1.13",
-        "grpc/grpc": "^1.42"
+        "grpc/grpc": "^1.42",
+        "ext-grpc": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
