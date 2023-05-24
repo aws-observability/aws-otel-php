@@ -67,6 +67,7 @@ class AwsSdkInstrumentationController
         $propagator = new Propagator();
         $tracer = $tracerProvider->getTracer('io.opentelemetry.contrib.php');
         $carrier = [];
+        $traceId = "";
 
         // Create and activate root span
         $root = $tracer
@@ -81,40 +82,44 @@ class AwsSdkInstrumentationController
                 ->startSpan();
         $httpScope = $httpSpan->activate();
 
-        // Make HTTP request
-        $client = HttpClient::create(); 
+        try {
+            // Make HTTP request
+            $client = HttpClient::create(); 
 
-        $awsHttpUrl = 'https://aws.amazon.com/';
+            $awsHttpUrl = 'https://aws.amazon.com/';
 
-        $response = $client->request(
-            'GET',
-            $awsHttpUrl
-        );
+            $response = $client->request(
+                'GET',
+                $awsHttpUrl
+            );
 
-        $propagator->inject($carrier);
+            $propagator->inject($carrier);
 
-        $root->setAttributes([
-            "http.method" => $this->request->getMethod(),
-            "http.url" => $this->request->getUri(),
-            "http.status_code" => $response->getStatusCode()
-        ]);
+            $root->setAttributes([
+                "http.method" => $this->request->getMethod(),
+                "http.url" => $this->request->getUri(),
+                "http.status_code" => $response->getStatusCode()
+            ]);
 
-        $httpSpan->setAttributes([
-            "http.method" => $this->request->getMethod(),
-            "http.url" => $awsHttpUrl,
-            "http.status_code" => $response->getStatusCode()
-        ]);
+            $httpSpan->setAttributes([
+                "http.method" => $this->request->getMethod(),
+                "http.url" => $awsHttpUrl,
+                "http.status_code" => $response->getStatusCode()
+            ]);
 
-        $httpSpan->end();
-        $httpScope->detach();
+            $traceId = $this->convertOtelTraceIdToXrayFormat(
+                $root->getContext()->getTraceId()
+            );
+        } finally {
+            $httpSpan->end();
+            $httpScope->detach();
 
-        $root->end();
-        $rootScope->detach();
+            $root->end();
+            $rootScope->detach();
 
-        $traceId = $this->convertOtelTraceIdToXrayFormat(
-            $root->getContext()->getTraceId()
-        );
-
+            
+        }
+        
         return new JsonResponse(
             ['traceId' => $traceId]
         );
@@ -138,6 +143,7 @@ class AwsSdkInstrumentationController
         // Configure AWS SDK Instrumentation with Propagator and set Tracer Provider (created above)
         $awssdkinstrumentation->setPropagator($propagator);
         $awssdkinstrumentation->setTracerProvider($tracerProvider);
+        $traceId = "";
 
         // Create and activate root span
         $root = $awssdkinstrumentation
@@ -174,17 +180,17 @@ class AwsSdkInstrumentationController
                 'http.status_code' => $result['@metadata']['statusCode'],
             ]);
 
+            $traceId = $this->convertOtelTraceIdToXrayFormat(
+                $root->getContext()->getTraceId()
+            );
+
         } catch (AwsException $e){
             $root->recordException($e);
+        } finally {
+            // End the root span after all the calls to the AWS SDK have been made
+            $root->end();
+            $rootScope->detach();
         }
-
-        // End the root span after all the calls to the AWS SDK have been made
-        $root->end();
-        $rootScope->detach();
-
-        $traceId = $this->convertOtelTraceIdToXrayFormat(
-            $root->getContext()->getTraceId()
-        );
 
         return new JsonResponse(
             ['traceId' => $traceId]
