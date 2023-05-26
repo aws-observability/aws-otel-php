@@ -1,7 +1,5 @@
 name: Integration Testing
 on:
-  pull_request:
-    branches: [main]
   push:
     branches:
       - main
