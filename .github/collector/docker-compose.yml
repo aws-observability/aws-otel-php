@@ -25,7 +25,9 @@ services:
       - LISTEN_ADDRESS=0.0.0.0:8000
       - OTEL_EXPORTER_OTLP_INSECURE=True
       - OTEL_RESOURCE_ATTRIBUTES=service.name=aws-otel-integ-test
-      - OTEL_EXPORTER_OTLP_ENDPOINT=otel:4317
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=otel:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PHP_TRACES_PROCESSOR=simple
     ports:
       - '8000:8000'
 
