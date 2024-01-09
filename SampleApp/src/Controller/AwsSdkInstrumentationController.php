@@ -5,7 +5,8 @@ use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 
 use OpenTelemetry\API\Trace\SpanKind;
-use OpenTelemetry\API\Common\Signal\Signals;
+use OpenTelemetry\API\Signals;
+use OpenTelemetry\API\LoggerHolder;
 
 use OpenTelemetry\Contrib\Otlp\OtlpUtil;
 use OpenTelemetry\Contrib\Otlp\SpanExporter;
@@ -24,7 +25,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-\OpenTelemetry\API\Common\Log\LoggerHolder::set(new \Monolog\Logger('grpc', [new \Monolog\Handler\StreamHandler('php://stderr')]));
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
+LoggerHolder::set(
+    new Logger('grpc', [new StreamHandler('php://stderr')])
+);
 
 class AwsSdkInstrumentationController
 {
