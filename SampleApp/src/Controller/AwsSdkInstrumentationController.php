@@ -68,7 +68,8 @@ class AwsSdkInstrumentationController
         If running this sample app locally, set the endpoint to correspond to the endpoint 
         of your collector instance. 
         */
-        $transport = (new GrpcTransportFactory())->create('http://otel:4317' . OtlpUtil::method(Signals::TRACE));
+        $endpoint = $this->getEndpoint();
+        $transport = (new GrpcTransportFactory())->create($endpoint . OtlpUtil::method(Signals::TRACE));
         $exporter = new SpanExporter($transport);
 
         // Initialize Span Processor, X-Ray ID generator, Tracer Provider, and Propagator
@@ -145,7 +146,8 @@ class AwsSdkInstrumentationController
             If running this sample app locally, set the endpoint to correspond to the endpoint 
             of your collector instance. 
         */
-        $transport = (new GrpcTransportFactory())->create('http://otel:4317' . OtlpUtil::method(Signals::TRACE));
+        $endpoint = $this->getEndpoint();
+        $transport = (new GrpcTransportFactory())->create($endpoint . OtlpUtil::method(Signals::TRACE));
         $exporter = new SpanExporter($transport);
 
         // Initialize Span Processor, X-Ray ID generator, Tracer Provider, and Propagator
@@ -214,5 +216,13 @@ class AwsSdkInstrumentationController
         return new JsonResponse(
             ['traceId' => $traceId]
         );
+    }
+
+    private function getEndpoint(): string
+    {
+        if (Configuration::has(Variables::OTEL_EXPORTER_OTLP_TRACES_ENDPOINT)) {
+            return Configuration::getString(Variables::OTEL_EXPORTER_OTLP_TRACES_ENDPOINT);
+        }
+        return 'http://0.0.0.0:4317';
     }
 }
