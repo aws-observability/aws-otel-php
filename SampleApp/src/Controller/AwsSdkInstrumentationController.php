@@ -16,6 +16,8 @@ use OpenTelemetry\Aws\Xray\IdGenerator;
 use OpenTelemetry\Aws\Xray\Propagator;
 use OpenTelemetry\Aws\AwsSdkInstrumentation;
 
+use OpenTelemetry\SDK\Common\Configuration\Configuration;
+use OpenTelemetry\SDK\Common\Configuration\Variables;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
 
